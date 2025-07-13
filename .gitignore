@@ -1,0 +1,8 @@
+# Python/Flask Backend
+__pycache__/
+*.pyc
+venv/
+.env
+
+# YOLO model
+*.pt

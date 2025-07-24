@@ -1,10 +1,10 @@
 from flask import Flask
-from jetson_routes import jetson_bp, camera_manager
+from camera_routes import remote_bp
 
 app = Flask(__name__)
 
 # Register the Jetson camera blueprint
-app.register_blueprint(jetson_bp)
+app.register_blueprint(remote_bp)
 
 if __name__ == '__main__':
     try:

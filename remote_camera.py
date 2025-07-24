@@ -1,9 +1,9 @@
 import threading
 import time
 import cv2
-from ultralytics import YOLO
+# from ultralytics import YOLO
 
-class JetsonCameraManager:
+class RemoteCameraManager:
     def __init__(self):
         self.model = None
         self.camera = None
@@ -15,34 +15,35 @@ class JetsonCameraManager:
         self.camera_height = 480
         self.camera_fps = 30
         self.jpeg_quality = 80
-        
-    def load_model(self):
-        """Load YOLO model"""
+    
+    """def load_model(self):"""
+    """Load YOLO model"""
+    """
         try:
-            print("Loading YOLOv8 model...")
-            # Use YOLOv8 nano for Jetson Nano performance
-            self.model = YOLO('yolov8n.pt')
+            print("Loading YOLOv5 model...")
+            # Use YOLOv5n nano for performance
+            self.model = YOLO('yolov5nu.pt')
             print("Model loaded successfully!")
             return True
         except Exception as e:
             print(f"Error loading model: {e}")
             return False
-    
+    """
     def start_camera(self):
         """Start camera capture"""
         try:
-            print("Starting Jetson camera...")
-            
+            print("Starting camera...")
+            """""
             # Load model if not loaded
             if self.model is None:
                 if not self.load_model():
                     return False, "Failed to load model"
-            
+            """
             with self.camera_lock:
                 if self.is_active:
                     return False, "Camera already active"
                 
-                # Try different camera indices for Jetson Nano
+                # Try different camera indices for remote camera manager
                 # 0 = USB camera, 1 = CSI camera (if available)
                 camera_indices = [0, 1]
                 
@@ -70,7 +71,7 @@ class JetsonCameraManager:
                     return False, "Camera opened but failed to capture frame"
                 
                 self.is_active = True
-                print("Jetson camera started successfully")
+                print("Camera started successfully")
                 return True, "Camera started successfully"
                 
         except Exception as e:
@@ -89,7 +90,7 @@ class JetsonCameraManager:
                     self.camera = None
                 
                 self.is_active = False
-                print("Jetson camera stopped")
+                print("Camera stopped")
                 return True, "Camera stopped successfully"
                 
         except Exception as e:
@@ -102,7 +103,7 @@ class JetsonCameraManager:
     
     def generate_frames(self, annotations_enabled=True):
         """Generate frames with optional annotations"""
-        print(f"Starting Jetson frame generation... (annotations: {annotations_enabled})")
+        print(f"Starting frame generation... (annotations: {annotations_enabled})")
         failed_frames = 0
         max_failed_frames = 30
         
@@ -130,16 +131,17 @@ class JetsonCameraManager:
                 
                 # Reset failed frames counter on successful frame
                 failed_frames = 0
-                
+                """"
                 # Apply YOLO detection only if annotations are enabled
                 if annotations_enabled and self.model is not None:
                     results = self.model(frame, verbose=False)
                     annotated_frame = results[0].plot()
                 else:
                     annotated_frame = frame
+                """
                 
                 # Encode frame as JPEG
-                ret, buffer = cv2.imencode('.jpg', annotated_frame, 
+                ret, buffer = cv2.imencode('.jpg', frame, # use annotated_frame later
                                         [cv2.IMWRITE_JPEG_QUALITY, self.jpeg_quality])
                 
                 if ret:
@@ -154,5 +156,4 @@ class JetsonCameraManager:
                 print(f"Error processing frame: {e}")
                 break
         
-        print("Jetson frame generation ended")
-
+        print("Frame generation ended")

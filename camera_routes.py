@@ -1,14 +1,14 @@
 from datetime import datetime
 from flask import Blueprint, Response, jsonify, request
-from jetson_camera import JetsonCameraManager
+from remote_camera import RemoteCameraManager
 
 # Create blueprint
-jetson_bp = Blueprint('jetson_camera', __name__)
+remote_bp = Blueprint('remote_camera', __name__)
 
 # Initialize camera manager
-camera_manager = JetsonCameraManager()
+camera_manager = RemoteCameraManager()
 
-@jetson_bp.route('/api/start_camera', methods=['POST'])
+@remote_bp.route('/api/start_camera', methods=['POST'])
 def start_camera():
     """Start camera endpoint"""
     try:
@@ -20,7 +20,7 @@ def start_camera():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@jetson_bp.route('/api/stop_camera', methods=['POST'])
+@remote_bp.route('/api/stop_camera', methods=['POST'])
 def stop_camera():
     """Stop camera endpoint"""
     try:
@@ -32,7 +32,7 @@ def stop_camera():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@jetson_bp.route('/api/camera_status', methods=['GET'])
+@remote_bp.route('/api/camera_status', methods=['GET'])
 def camera_status():
     """Get camera status"""
     try:
@@ -45,11 +45,11 @@ def camera_status():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@jetson_bp.route('/api/video_feed')
+@remote_bp.route('/api/video_feed')
 def video_feed():
     """Video feed endpoint with optional annotations"""
     try:
-        print("Jetson video feed endpoint called")
+        print("Video feed endpoint called")
         
         if not camera_manager.is_camera_active():
             print("Camera not initialized")
@@ -58,24 +58,24 @@ def video_feed():
         # Get annotations parameter from query string (default: True)
         annotations_enabled = request.args.get('annotations', 'true').lower() == 'true'
         
-        print(f"Starting Jetson video stream... (annotations: {annotations_enabled})")
-        return Response(camera_manager.generate_frames(annotations_enabled),
+        print(f"Starting video stream... (annotations: {annotations_enabled})")
+        return Response(camera_manager.generate_frames(),   # pass annotations_enabled as a param later
                        mimetype='multipart/x-mixed-replace; boundary=frame')
     except Exception as e:
         print(f"Error in video feed: {e}")
         return jsonify({'error': str(e)}), 500
 
-@jetson_bp.route('/api/health', methods=['GET'])
+@remote_bp.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
     return jsonify({
         'status': 'healthy',
-        'service': 'jetson-camera-backend',
+        'service': 'remote-camera-backend',
         'timestamp': datetime.now().isoformat()
     }), 200
 
 # Cleanup on app shutdown
-@jetson_bp.teardown_appcontext
+@remote_bp.teardown_appcontext
 def cleanup(error):
     """Cleanup resources"""
     try:
@@ -83,7 +83,7 @@ def cleanup(error):
     except:
         pass
 
-@jetson_bp.route('/api/shutdown', methods=['POST'])
+@remote_bp.route('/api/shutdown', methods=['POST'])
 def shutdown_server():
     """Shutdown server and cleanup resources"""
     try:

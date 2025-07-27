@@ -12,9 +12,12 @@ if __name__ == '__main__':
         print("Endpoints available:")
         print("  POST /api/start_camera - Start camera")
         print("  POST /api/stop_camera - Stop camera") 
-        print("  GET  /api/camera_status - Check camera status")
-        print("  GET  /api/video_feed - Video stream")
+        print("  POST /api/start_recording - Start YOLO recording")
+        print("  POST /api/stop_recording - Stop YOLO recording")
+        print("  GET  /api/camera_status - Check camera and recording status")
+        print("  GET  /api/video_feed - Video stream (live always, YOLO when recording)")
         print("  GET  /api/health - Health check")
+        print("  POST /api/shutdown - Shutdown server")
         
         # Run on all interfaces so it's accessible from other devices
         app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)

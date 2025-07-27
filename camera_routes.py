@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, Response, jsonify
 from remote_camera import RemoteCameraManager
 
 # Create blueprint
@@ -40,8 +40,33 @@ def camera_status():
         return jsonify({
             'status': 'success',
             'camera_active': is_active,
+            'recording_active': camera_manager.is_recording_active(),
             'timestamp': datetime.now().isoformat()
         }), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@remote_bp.route('/api/start_recording', methods=['POST'])
+def start_recording():
+    """Start YOLO recording endpoint"""
+    try:
+        success, message = camera_manager.start_recording()
+        if success:
+            return jsonify({'status': 'success', 'message': message}), 200
+        else:
+            return jsonify({'status': 'error', 'message': message}), 400
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@remote_bp.route('/api/stop_recording', methods=['POST'])
+def stop_recording():
+    """Stop YOLO recording endpoint"""
+    try:
+        success, message = camera_manager.stop_recording()
+        if success:
+            return jsonify({'status': 'success', 'message': message}), 200
+        else:
+            return jsonify({'status': 'error', 'message': message}), 400
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
@@ -55,11 +80,8 @@ def video_feed():
             print("Camera not initialized")
             return jsonify({'error': 'Camera not started'}), 400
         
-        # Get annotations parameter from query string (default: True)
-        annotations_enabled = request.args.get('annotations', 'true').lower() == 'true'
-        
-        print(f"Starting video stream... (annotations: {annotations_enabled})")
-        return Response(camera_manager.generate_frames(),   # pass annotations_enabled as a param later
+        print(f"Starting video stream...")
+        return Response(camera_manager.generate_frames(),
                        mimetype='multipart/x-mixed-replace; boundary=frame')
     except Exception as e:
         print(f"Error in video feed: {e}")
@@ -79,6 +101,7 @@ def health_check():
 def cleanup(error):
     """Cleanup resources"""
     try:
+        camera_manager.stop_recording()
         camera_manager.stop_camera()
     except:
         pass

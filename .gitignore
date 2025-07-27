@@ -6,3 +6,7 @@ venv/
 
 # YOLO model
 *.pt
+
+# System junk
+.DS_Store
+Thumb.db
